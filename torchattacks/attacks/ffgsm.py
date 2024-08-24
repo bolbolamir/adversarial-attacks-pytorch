@@ -36,6 +36,8 @@ class FFGSM(Attack):
         r"""
         Overridden.
         """
+        minim = images.min()
+        maxim = images.max()
 
         images = images.clone().detach().to(self.device)
         labels = labels.clone().detach().to(self.device)
@@ -48,7 +50,7 @@ class FFGSM(Attack):
         adv_images = images + torch.randn_like(images).uniform_(
             -self.eps, self.eps
         )  # nopep8
-        adv_images = torch.clamp(adv_images, min=0, max=1).detach()
+        adv_images = torch.clamp(adv_images, min=minim, max=maxim).detach()
         adv_images.requires_grad = True
 
         outputs = self.get_logits(adv_images)
@@ -66,6 +68,6 @@ class FFGSM(Attack):
 
         adv_images = adv_images + self.alpha * grad.sign()
         delta = torch.clamp(adv_images - images, min=-self.eps, max=self.eps)
-        adv_images = torch.clamp(images + delta, min=0, max=1).detach()
+        adv_images = torch.clamp(images + delta, min=minim, max=maxim).detach()
 
         return adv_images
